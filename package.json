@@ -18,7 +18,9 @@
      "mkdirp":"0.2.2",
      "xcode":"0.3.4",
      "plist":"git+https://github.com/joshfire/node-plist.git",
-     "glob":"3.0.1"
+     "glob":"3.0.1",
+	 "node-native-zip":"1.1.0",
+	 "async":"0.1.22"
   },
   "devDependencies": {
     "nodeunit": "0.6.4"

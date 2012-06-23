@@ -4,6 +4,7 @@ var fs = require('fs'),
     et = require('elementtree'),
     nCallbacks = require('../util/ncallbacks'),
     asyncCopy = require('../util/asyncCopy'),
+    zipDir = require('../util/zipDir'),
     assetsDir = 'assets/www', // relative path to project's web assets
     sourceDir = 'src',
     counter = {};
@@ -16,24 +17,36 @@ exports.installPlugin = function (config, plugin, callback) {
         libFiles = platformTag.findall('./library-file'),
         pluginsChanges = platformTag.findall('./config-file[@target="res/xml/plugins.xml"]'),
         manifestChanges = platformTag.findall('./config-file[@target="AndroidManifest.xml"]'),
+        hydrate = platformTag.find('hydrate'),
 
         callbackCount = assets.length + sourceFiles.length + pluginsChanges.length
             + libFiles.length + manifestChanges.length,
         endCallback = nCallbacks(callbackCount, callback)
+        
+    function moveAssets() {
+        // move asset files
+        assets.forEach(function (asset) {
+            var srcPath = path.resolve(
+                            config.pluginPath,
+                            asset.attrib['src']);
 
-    // move asset files
-    assets.forEach(function (asset) {
-        var srcPath = path.resolve(
-                        config.pluginPath,
-                        asset.attrib['src']);
+            var targetPath = path.resolve(
+                                config.projectPath,
+                                assetsDir,
+                                asset.attrib['target']);
 
-        var targetPath = path.resolve(
-                            config.projectPath,
-                            assetsDir,
-                            asset.attrib['target']);
-
-        asyncCopy(srcPath, targetPath, endCallback);
-    });
+            asyncCopy(srcPath, targetPath, endCallback);
+        });
+    }    
+    
+    // hydrate -- need to complete this prior to moving the www assets
+    if (hydrate != undefined) {
+        var zipPath = hydrate.attrib['zip-path'];
+        zipDir(
+            path.resolve(config.projectPath, assetsDir), 
+            path.resolve(config.projectPath, zipPath),
+            moveAssets);
+    }
 
     // move source files
     sourceFiles.forEach(function (sourceFile) {
