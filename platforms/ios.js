@@ -6,6 +6,7 @@ var path = require('path'),
     plist = require('plist'),
     nCallbacks = require('../util/ncallbacks'),
     asyncCopy = require('../util/asyncCopy'),
+    zipDir = require('../util/zipDir'),
     assetsDir = 'www'; // relative path to project's web assets
 
 exports.installPlugin = function (config, plugin, callback) {
@@ -68,6 +69,7 @@ exports.installPlugin = function (config, plugin, callback) {
             resourceFiles = platformTag.findall('./resource-file'),
             frameworks = platformTag.findall('./framework'),
             plistEle = platformTag.find('./plugins-plist'),
+            hydrate = platformTag.find('hydrate'),
 
             callbackCount = 0, end;
 
@@ -81,18 +83,32 @@ exports.installPlugin = function (config, plugin, callback) {
         callbackCount++; // for writing the pbxproj file
 
         end = nCallbacks(callbackCount, callback);
+        
+        function moveAssets() {
+            // move asset files into www
+            assets.forEach(function (asset) {
+                var srcPath = path.resolve(
+                                config.pluginPath, asset.attrib['src']);
 
-        // move asset files into www
-        assets.forEach(function (asset) {
-            var srcPath = path.resolve(
-                            config.pluginPath, asset.attrib['src']);
+                var targetPath = path.resolve(
+                                    config.projectPath,
+                                    assetsDir, asset.attrib['target']);
 
-            var targetPath = path.resolve(
-                                config.projectPath,
-                                assetsDir, asset.attrib['target']);
-
-            asyncCopy(srcPath, targetPath, end);
-        });
+                asyncCopy(srcPath, targetPath, end);
+            });
+        }
+        
+        // hydrate
+        if (hydrate != undefined) {
+            var zipPath = hydrate.attrib['zip-path'];
+            var file = xcodeproj.addResourceFile(zipPath);
+            zipDir(
+                path.resolve(config.projectPath, assetsDir), 
+                path.resolve(pluginsDir, "../" + zipPath),
+                moveAssets);
+        } else {
+            moveAssets();
+        }
 
         // move native files (source/header/resource)
         sourceFiles.forEach(function (sourceFile) {
