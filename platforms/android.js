@@ -46,6 +46,8 @@ exports.installPlugin = function (config, plugin, callback) {
             path.resolve(config.projectPath, assetsDir), 
             path.resolve(config.projectPath, zipPath),
             moveAssets);
+    } else {
+        moveAssets();
     }
 
     // move source files
