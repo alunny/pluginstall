@@ -17,7 +17,9 @@ var fs = require('fs'),
     var sourceFiles = platformTag.findall('./source-file');
     var projectChanges = platformTag.findall('./config-file[@target=".csproj"]');
 
+
     var callbackCount = assets.length + sourceFiles.length + projectChanges.length;
+    console.log("projectChanges.length = " + projectChanges.length);
     var endCallback = nCallbacks(callbackCount, callback);
 
     // move asset files
@@ -38,33 +40,55 @@ var fs = require('fs'),
         });
     });
 
-    // add the new files to the project file
+    // add the new files to the project file, first we find the .csproj in the project folder
     fs.readdir(config.projectPath,function(err,files) {
 
 		for(var n=0; n<files.length;n++) {
-			//files[n] == "TestPluggr.xml")//
+
  			if( path.extname(files[n]) == ".csproj")
  			{
  				var projPath = path.join(config.projectPath,files[n]);
 
  				projectChanges.forEach(function (configNode) {
 
-					var projDoc = new et.ElementTree(et.XML(fs.readFileSync(projPath,'utf8')));
-            		var child = configNode.find('*');
+ 					var docStr = fs.readFileSync(projPath,"utf8");
 
-            		projDoc.getroot().append(child);
+ 					// don't need to do this when we are simply doing a text replace.
+ 					// 	// remove windows BOM which may be there.
+ 					// 	var startIndex = docStr.indexOf("<?");
+					// if(startIndex > 0) {
+					// 	docStr = docStr.substr(startIndex);
+					// }
 
-            		var newDocStr = projDoc.write(); // this should really be called toString(), but whatevs
-            		// the escaping in it sux
-            		newDocStr = newDocStr.split("&#xA;").join("\n");
-            		newDocStr = newDocStr.split("&#xD;").join("\r");
-            		// save the mod'd file
-            		fs.writeFile(projPath, newDocStr, function (err) {
-            			if (err) { 
-            				endCallback(err);
-            			}
-            			endCallback();
-        			});
+					// child is the configNode child that we will insert into csproj
+            		var child = configNode.find('*'); 
+
+            		var newNodeText = new et.ElementTree(child).write({xml_declaration:false});
+            		newNodeText = newNodeText.split("&#xA;").join("\n").split("&#xD;").join("\r");
+           			// insert text right before closing tag
+            		var newDocStr = docStr.replace("</Project>",newNodeText + "\n</Project>");
+            		// save it, and get out
+
+            		// need to do sync writing because of the flow control bs
+            		fs.writeFileSync(projPath, newDocStr);
+            		endCallback();
+
+
+
+		// var projDoc = new et.ElementTree(et.XML(docStr));
+           //  		projDoc.getroot().append(child);
+
+           //  		var newDocStr = projDoc.write(); // this should really be called toString(), but whatevs
+           //  		// the escaping in it sux
+           //  		newDocStr = newDocStr.split("&#xA;").join("\n");
+           //  		newDocStr = newDocStr.split("&#xD;").join("\r");
+           //  		// save the mod'd file
+           //  		fs.writeFile(projPath, newDocStr, function (err) {
+           //  			if (err) { 
+           //  				endCallback(err);
+           //  			}
+           //  			endCallback();
+        			// });
  				})
  				break;
  			}
