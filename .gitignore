@@ -4,6 +4,7 @@ node_modules/*
 # for testing mostly
 test/project/assets/www/childbrowser*
 test/project/www/childbrowser*
+test/project/www-only
 test/project/src/**/
 test/project/res/xml/plugins.xml
 test/project/AndroidManifest.xml
