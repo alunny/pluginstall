@@ -52,7 +52,7 @@ var fs = require('fs'),
 					var projDoc = new et.ElementTree(et.XML(fs.readFileSync(projPath,'utf8')));
             		var child = configNode.find('*');
 
-            		projDoc._root.append(child);
+            		projDoc.getroot().append(child);
 
             		var newDocStr = projDoc.write(); // this should really be called toString(), but whatevs
             		// the escaping in it sux
