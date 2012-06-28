@@ -63,6 +63,19 @@ exports.installPlugin = function (config, plugin, callback) {
         }
     }
 
+    function getRelativeDir(file) {
+        var targetDir = file.attrib['target-dir'],
+            preserveDirs = file.attrib['preserve-dirs'];
+
+        if (preserveDirs && preserveDirs.toLowerCase() == 'true') {
+            return path.dirname(file.attrib['src']);
+        } else if (targetDir) {
+            return targetDir;
+        } else {
+            return '';
+        }
+    }
+
     prepare(function (pbxPath, xcodeproj, plistPath, plistObj, pluginsDir) {
         var assets = plugin.xmlDoc.findall('./asset'),
             hosts = plugin.xmlDoc.findall('./access'),
