@@ -2,11 +2,6 @@
 
 > script to install Cordova plugins
 
-## Preqrequisites
-
-    $ cd pluginstall
-    $ npm install
-
 ## Usage
 
     pluginstall PLATFORM PROJECT-PATH PLUGIN-PATH
