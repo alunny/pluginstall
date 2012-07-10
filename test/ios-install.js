@@ -10,7 +10,7 @@ var fs = require('fs'),
 
     config = {
         platform: 'ios',
-        projectPath: fs.realpathSync('test/project'),
+        projectPath: fs.realpathSync('test/project/ios'),
         pluginPath: fs.realpathSync('test/plugin')
     },
     plugin = pluginstall.parseXml(config),
