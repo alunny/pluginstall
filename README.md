@@ -2,6 +2,11 @@
 
 > script to install Cordova plugins
 
+## Preqrequisites
+
+    $ cd pluginstall
+    $ npm install
+
 ## Usage
 
     pluginstall PLATFORM PROJECT-PATH PLUGIN-PATH
@@ -23,6 +28,7 @@ Then go!
 
 * Android
 * iOS
+* BlackBerry
 
 ## plugin.xml Format
 
@@ -33,3 +39,7 @@ Currently support the June 8 revision.
 ## License
 
 Apache
+
+## Running Tests
+
+    $ npm test
