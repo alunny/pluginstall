@@ -9,7 +9,7 @@ var fs = require('fs'),
     syncCopy = require('../util/syncCopy'),
     rmrf = require('../util/rmrf'),
     assetsDir = 'www', // relative path to project's web assets
-    jarDir = 'www/ext', // relative path to cordova jar
+    jarDir = 'ext', // relative path to cordova jar
     counter = {};
 
 
@@ -41,9 +41,9 @@ exports.installPlugin = function (config, plugin, callback) {
 
     // move source files
     // first extract the jar
-    var extPath = path.resolve(config.projectPath, jarDir);
+    var extPath = path.resolve(config.projectPath, assetsDir, jarDir);
     var jarFile = fs.readdirSync(extPath)[0];
-    var jarPath = path.resolve(config.projectPath, jarDir, jarFile);
+    var jarPath = path.resolve(extPath, jarFile);
     var jar = new zip(jarPath);
     jar.extractAllTo(extPath, true);
     fs.unlinkSync(jarPath); // delete old jar

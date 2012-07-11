@@ -11,3 +11,4 @@ test/project/ios/SampleApp/PhoneGap.plist
 test/project/ios/SampleApp.xcodeproj/project.pbxproj
 test/project/ios/SampleApp/Plugins/*
 test/project/blackberry/www/childbrowser*
+test/project/blackberry/www/plugins.xml

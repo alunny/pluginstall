@@ -51,5 +51,24 @@
 
         <!-- framework for testing (not actual dependency of ChildBrowser -->
         <framework src="libsqlite3.dylib" />
-    </platform>
+      </platform>
+
+      <!-- blackberry -->
+      <platform name="blackberry">
+          <config-file target="www/plugins.xml" parent="/plugins">
+              <plugin name="ChildBrowser"
+                  value="com.phonegap.plugins.childbrowser.ChildBrowser"/>
+          </config-file>
+
+          <source-file src="src/blackberry/ChildBrowser.java"
+                  target-dir="www/ext/com/phonegap/plugins/childbrowser" />
+          <source-file src="src/blackberry/CustomBrowser.java"
+                  target-dir="www/ext/com/phonegap/plugins/childbrowser" />
+          <source-file src="src/blackberry/NavigationBar.java"
+                  target-dir="www/ext/com/phonegap/plugins/childbrowser" />
+          <source-file src="src/blackberry/URLEditField.java"
+                  target-dir="www/ext/com/phonegap/plugins/childbrowser" />
+          <source-file src="src/blackberry/URLLabelField.java"
+                  target-dir="www/ext/com/phonegap/plugins/childbrowser" />
+      </platform>
 </plugin>

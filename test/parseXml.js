@@ -3,7 +3,7 @@ var pluginstall = require('../pluginstall'),
     et = require('elementtree'),
     configObj = {
         platform: 'android',
-        projectPath: fs.realpathSync('test/project'),
+        projectPath: fs.realpathSync('test/project/android'),
         pluginPath: fs.realpathSync('test/plugin')
     };
 
@@ -24,7 +24,7 @@ exports['should return an object with the correct fields'] = function (test) {
 
     test.equals('com.phonegap.plugins.childbrowser', dataObj._id);
     test.equals('0.6.0', dataObj.version);
-    test.equals(2, dataObj.platforms.length);
+    test.equals(3, dataObj.platforms.length);
     test.equals('android', dataObj.platforms[0]);
 
     test.done();
