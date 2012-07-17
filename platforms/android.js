@@ -14,7 +14,7 @@ exports.installPlugin = function (config, plugin, callback) {
         platformTag = plugin.xmlDoc.find('./platform[@name="android"]'),
         sourceFiles = platformTag.findall('./source-file'),
         libFiles = platformTag.findall('./library-file'),
-        pluginsChanges = platformTag.findall('./config-file[@target="res/xml/plugins.xml"]'),
+        pluginsChanges = platformTag.findall('./config-file[@target="res/xml/config.xml"]'),
         manifestChanges = platformTag.findall('./config-file[@target="AndroidManifest.xml"]'),
 
         callbackCount = assets.length + sourceFiles.length + pluginsChanges.length
@@ -67,10 +67,11 @@ exports.installPlugin = function (config, plugin, callback) {
 
     // edit plugins.xml
     pluginsChanges.forEach(function (configNode) {
-        var pluginsPath = path.resolve(config.projectPath, 'res/xml/plugins.xml'),
+        var pluginsPath = path.resolve(config.projectPath, 'res/xml/config.xml'),
             pluginsDoc = readAsETSync(pluginsPath),
             selector = configNode.attrib["parent"],
             child = configNode.find('*');
+
 
         if (addToDoc(pluginsDoc, child, selector)) {
             fs.writeFile(pluginsPath, pluginsDoc.write(), function (err) {
