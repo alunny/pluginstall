@@ -14,7 +14,7 @@ var fs = require('fs'),
     // setup
     config = {
         platform: 'android',
-        projectPath: fs.realpathSync('test/project'),
+        projectPath: fs.realpathSync('test/project/android'),
         pluginPath: fs.realpathSync('test/plugin')
     },
     plugin = pluginstall.parseXml(config),
@@ -24,7 +24,9 @@ var fs = require('fs'),
     assetPath = assetsDir + '/childbrowser',
     javaDir  = path.resolve(config.projectPath,
                             'src/com/phonegap/plugins/childBrowser'),
-    javaPath = path.resolve(javaDir, 'ChildBrowser.java')
+    javaPath = path.resolve(javaDir, 'ChildBrowser.java'),
+    pluginsXml = path.resolve(config.projectPath, 'res/xml/plugins.xml'),
+    manifestXml = path.resolve(config.projectPath, 'AndroidManifest.xml')
 
 function moveProjFile(origFile, callback) {
     var src = path.resolve(config.projectPath, origFile),
@@ -91,7 +93,7 @@ exports['should move the src file'] = function (test) {
 
 exports['should add ChildBrowser to plugins.xml'] = function (test) {
     android.installPlugin(config, plugin, function (err) {
-        var pluginsTxt = fs.readFileSync('test/project/res/xml/plugins.xml', 'utf-8'),
+        var pluginsTxt = fs.readFileSync(pluginsXml, 'utf-8'),
             pluginsDoc = new et.ElementTree(et.XML(pluginsTxt)),
             expected = 'plugin[@name="ChildBrowser"]' +
                         '[@value="com.phonegap.plugins.childBrowser.ChildBrowser"]';
@@ -103,7 +105,7 @@ exports['should add ChildBrowser to plugins.xml'] = function (test) {
 
 exports['should add ChildBrowser to AndroidManifest.xml'] = function (test) {
     android.installPlugin(config, plugin, function (err) {
-        var manifestTxt = fs.readFileSync('test/project/AndroidManifest.xml', 'utf-8'),
+        var manifestTxt = fs.readFileSync(manifestXml, 'utf-8'),
             manifestDoc = new et.ElementTree(et.XML(manifestTxt)),
             activities = manifestDoc.findall('application/activity'), i;
                         

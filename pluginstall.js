@@ -5,7 +5,8 @@ var fs = require('fs'),
     platforms = require('./platforms'),
     platformModules = {
         'android': require('./platforms/android'),
-        'ios': require('./platforms/ios')
+        'ios': require('./platforms/ios'),
+        'blackberry': require('./platforms/blackberry')
     }
 
 // check arguments and resolve file paths

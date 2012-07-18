@@ -23,6 +23,7 @@ Then go!
 
 * Android
 * iOS
+* BlackBerry
 
 ## plugin.xml Format
 
@@ -33,3 +34,7 @@ Currently support the June 8 revision.
 ## License
 
 Apache
+
+## Running Tests
+
+    $ npm test
