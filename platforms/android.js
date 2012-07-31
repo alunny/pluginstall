@@ -18,7 +18,7 @@ exports.installPlugin = function (config, plugin, callback) {
         manifestChanges = platformTag.findall('./config-file[@target="AndroidManifest.xml"]'),
 
         callbackCount = assets.length + sourceFiles.length + pluginsChanges.length
-            + manifestChanges.length,
+            + libFiles.length + manifestChanges.length,
         endCallback = nCallbacks(callbackCount, callback)
 
     // move asset files
@@ -41,8 +41,8 @@ exports.installPlugin = function (config, plugin, callback) {
                                 sourceFile.attrib['target-dir'])
 
         mkdirp(srcDir, function (err) {
-            var srcFile = path.resolve(config.pluginPath, 'src/android',
-                                        sourceFile.attrib['src']),
+
+            var srcFile = srcPath(config.pluginPath, sourceFile.attrib['src']),
                 destFile = path.resolve(srcDir,
                                 path.basename(sourceFile.attrib['src']));
 
@@ -135,4 +135,14 @@ function readAsETSync(filename) {
     var contents = fs.readFileSync(filename, 'utf-8');
 
     return new et.ElementTree(et.XML(contents));
+}
+
+function srcPath(pluginPath, filename) {
+    var prefix = /^src\/android/;
+
+    if (prefix.test(filename)) {
+        return path.resolve(pluginPath, filename);
+    } else {
+        return path.resolve(pluginPath, 'src/android', filename);
+    }
 }
