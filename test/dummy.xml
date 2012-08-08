@@ -11,7 +11,7 @@
 
 	<access origin="build.phonegap.com" />
 	<access origin="s3.amazonaws.com" />
-	
+
     <!-- android -->
     <platform name="android">
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
@@ -20,6 +20,12 @@
                 <intent-filter>
                 </intent-filter>
             </activity>
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/somewhere/else">
+            <another-tag real="false">
+                <child-here>HALLO</child-here>
+            </another-tag>
         </config-file>
 
         <!-- CDV < 2.0 -->
