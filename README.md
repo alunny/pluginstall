@@ -23,6 +23,7 @@ Then go!
 
 * Android
 * iOS
+* WP7
 
 ## plugin.xml Format
 

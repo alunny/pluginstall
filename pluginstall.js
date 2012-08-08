@@ -4,9 +4,17 @@ var fs = require('fs'),
     et = require('elementtree'),
     platforms = require('./platforms'),
     platformModules = {
-        'android': require('./platforms/android'),
-        'ios': require('./platforms/ios')
+
+        'wp7': require('./platforms/wp7')
     }
+
+
+    /*
+        'android': require('./platforms/android'),
+        'ios': require('./platforms/ios'),
+    */
+
+
 
 // check arguments and resolve file paths
 exports.init = function (platform, projectPath, pluginPath) {
@@ -24,13 +32,15 @@ exports.init = function (platform, projectPath, pluginPath) {
 }
 
 exports.parseXml = function (config) {
-    var xmlPath     = path.join(config.pluginPath, 'plugin.xml'),
-        xmlText     = fs.readFileSync(xmlPath, 'utf-8'),
-        xmlDoc      = new et.ElementTree(et.XML(xmlText)),
-        rootAttr    = xmlDoc._root.attrib,
-        supportedPlatforms;
+    var xmlPath     = path.join(config.pluginPath, 'plugin.xml');
+    
 
-    supportedPlatforms = xmlDoc.findall('platform').map(function (platform) {
+    var xmlText     = fs.readFileSync(xmlPath, 'utf-8');
+
+    var xmlDoc      = new et.ElementTree(et.XML(xmlText));
+    var rootAttr    = xmlDoc._root.attrib;
+    
+    var supportedPlatforms = xmlDoc.findall('platform').map(function (platform) {
         return platform.attrib['name'];
     });
 

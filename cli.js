@@ -1,30 +1,50 @@
 #!/usr/bin/env node
 var pluginstall = require('./pluginstall'),
-    platform, projectDir, pluginDir,
-    config, plugin, package;
+    platform, 
+    projectDir, 
+    pluginDir,
+    config, 
+    plugin, 
+    package;
 
-if (process.argv[0] == 'node') process.argv.shift()
+var args = process.argv.slice();
+var firstArgIndex = 0;
 
-process.argv.shift() // skip "cli.js"
+// note: windows expands node to the full node.exe path
+if (args[0] == "node" || args[0].indexOf("node.exe") > 0) {
+    firstArgIndex++;
+}
 
-if (process.argv.length == 0) {
-    console.log('Usage: pluginstall [platform] [project directory] [plugin directory]')
-} else if (process.argv[0] === '-v') {
-    package = require('./package')
-    console.log('pluginstall version ' + package.version)
-} else {
-    platform = process.argv.shift()
-    projectDir = process.argv.shift()
-    pluginDir = process.argv.shift()
+//args.shift() // skip "cli.js"
+firstArgIndex++;
 
-    config = pluginstall.init(platform, projectDir, pluginDir)
-    plugin = pluginstall.parseXml(config)
+//console.log("args.length = " + args.length + " : " + firstArgIndex + " " + args);
+
+if (args.length == firstArgIndex) {
+    console.log('Usage: pluginstall [platform] [project directory] [plugin directory]');
+} 
+else if (args[firstArgIndex] === '-v') {
+    package = require('./package');
+    console.log('pluginstall version ' + package.version);
+} 
+else {
+    platform = args[firstArgIndex];
+    projectDir = args[firstArgIndex+1];
+    pluginDir = args[firstArgIndex+2];
+
+    // console.log("platform = " + platform);
+    // console.log("projectDir = " + projectDir);
+    // console.log("pluginDir = " + pluginDir);
+
+    config = pluginstall.init(platform, projectDir, pluginDir);
+
+    plugin = pluginstall.parseXml(config);
 
     pluginstall.installPlugin(config, plugin, function (err) {
         if (err) {
-            console.error(err)
+            console.error(err);
         } else {
-            console.log('plugin installed')
+            console.log('plugin installed for platform::' + platform);
         }
     });
 }

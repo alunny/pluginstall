@@ -53,6 +53,7 @@ exports.installPlugin = function (config, plugin, callback) {
                                 sourceFile.attrib['target-dir'])
 
         mkdirp(srcDir, function (err) {
+
             var srcFile = srcPath(config.pluginPath, sourceFile.attrib['src']),
                 destFile = path.resolve(srcDir,
                                 path.basename(sourceFile.attrib['src']));
