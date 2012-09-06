@@ -53,7 +53,7 @@ A plugin is typically a combination of some web/www code, and some native code.
 However, plugins may have only one of these things - a plugin could be a single
 JavaScript, or some native code with no corresponding JavaScript.
 
-Assuming both web code and native code are present, the plugins should be
+Assuming both web code and native code are present, the plugins are
 structured like so:
 
     foo-plugin # top-level directory
@@ -136,10 +136,9 @@ maintenance when the underlying platform is updated. A minimum of `>`, `>=`,
         <engine name="cordova" version="<1.8.1" />
     </engines>
 
-Tools may abort plugin installation if the target project does not meet the
+Pluginstall will abort plugin installation if the target project does not meet the
 engine constraints.
 
-> MikeR: This needs to be less general. E.g., "Pluginstall will abort plugin installation" 
 
 
 ### &lt;name&gt; element
@@ -149,9 +148,8 @@ the name of the plugin. An example:
 
     <name>Foo</name>
 
-At this point in time, the tools prototyped for this format do not make use of
-this element. If this document progresses, localization will also need to be
-accounted for.
+Currently, Pluginstall does not make use of
+this element or handle localization.
 
 > MikeR: maybe we should require utf-8 encoding for this document?
 
@@ -189,8 +187,7 @@ should stop the installation process and notify the user of the conflict.
 
 ### &lt;platform&gt;
 
-Platform tags identify platforms that have associated native code. Tools using
-this specification can identify supported platforms and install the code into
+Platform tags identify platforms that have associated native code. Pluginstall can identify supported platforms and install the code into
 Cordova projects.
 
 A sample platform tag:
@@ -214,6 +211,8 @@ are listed:
 * ios
 
 Tools may accept alternate names for platforms. Whatever.
+
+> MikeR: What's the deal with this line?
 
 ### &lt;source-file&gt;
 
@@ -310,9 +309,7 @@ on. Example:
 
     <framework src="libsqlite3.dylib" />
 
-Tools should identify the framework through the `src` attribute and attempt to
-add the framework to the Cordova project, in the correct fashion for a given
-platform.
+Pluginstall identifies the framework through the `src` attribute and attempts to add the framework to the Cordova project, in the correct fashion for a given platform.
 
 ## Variables
 
@@ -331,11 +328,14 @@ series of capital letters, digits and underscores. For the above example, the
     <uses-permission
     android:name="$PACKAGE_NAME.permission.C2D_MESSAGE"/>
 
-Tools using this specification should replace variable references with the
+Pluginstall replaces variable references with the
 correct value, if specified, or the empty string otherwise. The value of the
 variable reference may be detected (in this case, from the `AndroidManifest.xml`
 file, or specified by the user of the tool; the exact process is dependent on
 the particular tool.
+
+> MikeR: I'm confused by "user of the tool" and "the particular tool" phrases. Are these referring to pluginstall, or is this referring to specific tools that are part of the build chain for different platforms like Android and IOS ?
+> 
 
 Certain variable names should be reserved - these are listed below.
 
