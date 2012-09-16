@@ -32,7 +32,7 @@ exports.installPlugin = function (config, plugin, callback) {
         // grab and parse plist file
         glob(config.projectPath + '/**/{PhoneGap,Cordova}.plist', function (err, files) {
             var pl;
-            
+
             if (!files.length) throw "does not appear to be a PhoneGap project";
 
             files = files.filter(function (val) {
@@ -56,6 +56,17 @@ exports.installPlugin = function (config, plugin, callback) {
                     end();
                 });
             });
+    }
+
+    // detect if a file is ascii by looking for an octet with a val > 127
+    function fileIsAscii(filename) {
+        // Read the file with no encoding for raw buffer access.
+        var buf = fs.readFileSync(filename);
+        // as soon as we hit an octet > 127, we prob have binary
+        for (var i=0, len=buf.length; i<len; i++) {
+          if (buf[i] > 127) { return false; }
+        }
+        return true;
     }
 
     function getRelativeDir(file) {
