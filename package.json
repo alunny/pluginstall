@@ -17,6 +17,7 @@
      "ncp":"0.2.6",
      "mkdirp":"0.2.2",
      "xcode":"0.4.1",
+     "bplist-parser": "0.0.4",
      "plist":"git+https://github.com/joshfire/node-plist.git",
      "glob":"3.0.1"
   },

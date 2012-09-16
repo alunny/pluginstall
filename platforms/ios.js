@@ -4,6 +4,7 @@ var path = require('path'),
     glob = require('glob'),
     xcode = require('xcode'),
     plist = require('plist'),
+    bplist = require('bplist-parser'),
     nCallbacks = require('../util/ncallbacks'),
     asyncCopy = require('../util/asyncCopy'),
     assetsDir = 'www'; // relative path to project's web assets
@@ -30,6 +31,8 @@ exports.installPlugin = function (config, plugin, callback) {
 
         // grab and parse plist file
         glob(config.projectPath + '/**/{PhoneGap,Cordova}.plist', function (err, files) {
+            var pl;
+            
             if (!files.length) throw "does not appear to be a PhoneGap project";
 
             files = files.filter(function (val) {
@@ -39,11 +42,20 @@ exports.installPlugin = function (config, plugin, callback) {
             store.plistPath = files[0];
             store.pluginsDir = path.resolve(files[0], '..', 'Plugins');
 
-            plist.parseFile(store.plistPath, function (err, obj) {
-                store.plist = obj;
-                end();
+            // determine if this is a binary or ascii plist and choose the parser
+            // NOTE: this is hopefully temporary, until TooTallNate can integrate
+            //       binary plist parsing into his library
+            if(fileIsAscii( store.plistPath )) {
+                pl = plist;
+            } else {
+                pl = bplist; 
+            }
+
+            pl.parseFile(store.plistPath, function (err, obj) {
+                    store.plist = obj;
+                    end();
+                });
             });
-        });
     }
 
     function getRelativeDir(file) {
