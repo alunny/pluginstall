@@ -126,7 +126,8 @@ exports.installPlugin = function (config, plugin, callback) {
                 srcFile = path.resolve(config.pluginPath, 'src/ios', src),
                 destFile = path.resolve(pluginsDir, path.basename(src));
 
-            xcodeproj.addResourceFile('Plugins/' + path.basename(src));
+            xcodeproj.addResourceFile('Plugins/' + path.basename(src),
+                                        { plugin: true });
 
             asyncCopy(srcFile, destFile, end);
         })
