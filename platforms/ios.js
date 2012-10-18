@@ -99,9 +99,14 @@ exports.installPlugin = function (config, plugin, callback) {
             var src = sourceFile.attrib['src'],
                 srcFile = path.resolve(config.pluginPath, 'src/ios', src),
                 targetDir = path.resolve(pluginsDir, getRelativeDir(sourceFile)),
-                destFile = path.resolve(targetDir, path.basename(src));
-                
-            xcodeproj.addSourceFile('Plugins/' + path.relative(pluginsDir, destFile));
+                destFile = path.resolve(targetDir, path.basename(src)),
+                targetFile = 'Plugins/' + path.relative(pluginsDir, destFile);
+
+            if (/[.]a$/.test(src)) {
+                xcodeproj.addStaticLibrary(targetFile, { plugin: true });
+            } else {
+                xcodeproj.addSourceFile(targetFile);
+            }
 
             mkdirp(targetDir, function (err) {
                 asyncCopy(srcFile, destFile, end);
@@ -113,9 +118,9 @@ exports.installPlugin = function (config, plugin, callback) {
                 srcFile = path.resolve(config.pluginPath, 'src/ios', src),
                 targetDir = path.resolve(pluginsDir, getRelativeDir(headerFile)),
                 destFile = path.resolve(targetDir, path.basename(src));
-                
+
             xcodeproj.addHeaderFile('Plugins/' + path.relative(pluginsDir, destFile));
-            
+
             mkdirp(targetDir, function (err) {
                 asyncCopy(srcFile, destFile, end);
             })

@@ -56,6 +56,19 @@ function clean(calllback) {
     moveProjFile('SampleApp.xcodeproj/project.orig.pbxproj', config.projectPath, end);
 }
 
+function nonComments(obj) {
+    var keys = Object.keys(obj),
+        newObj = {}, i = 0;
+
+    for (i; i < keys.length; i++) {
+        if (!/_comment$/.test(keys[i])) {
+            newObj[keys[i]] = obj[keys[i]];
+        }
+    }
+
+    return newObj;
+}
+
 exports.setUp = clean;
 exports.tearDown = clean;
 
@@ -102,6 +115,13 @@ exports['should move the bundle'] = function (test) {
     })
 }
 
+exports['should move the static library'] = function (test) {
+    ios.installPlugin(config, plugin, function (err) {
+        test.ok(fs.statSync(srcDir + '/libChildBrowser.a'))
+        test.done();
+    })
+}
+
 exports['should edit PhoneGap.plist'] = function (test) {
     ios.installPlugin(config, plugin, function (err) {
         var plistPath = config.projectPath + '/SampleApp/PhoneGap.plist';
@@ -126,7 +146,7 @@ exports['should edit the pbxproj file'] = function (test) {
         xcode.project(projPath).parse(function (err, obj) {
             var fileRefSection = obj.project.objects['PBXFileReference'],
                 fileRefLength = Object.keys(fileRefSection).length,
-                EXPECTED_TOTAL_REFERENCES = 92; // magic number ahoy!
+                EXPECTED_TOTAL_REFERENCES = 94; // magic number ahoy!
 
             test.equal(fileRefLength, EXPECTED_TOTAL_REFERENCES);
             test.done();
@@ -149,5 +169,32 @@ exports['should add the framework references to the pbxproj file'] = function (t
         // pretty low-rent test eh
         test.equal(references.length, 4);
         test.done();
+    });
+}
+
+exports['should add the static library to LIBRARY_SEARCH_PATHS'] = function (test) {
+    var expected = '"\\"$(SRCROOT)/$(TARGET_NAME)/Plugins\\""';
+
+    ios.installPlugin(config, plugin, function (err) {
+        var projPath = config.projectPath + '/SampleApp.xcodeproj/project.pbxproj',
+            project = new xcode.project(projPath);
+
+        // ermagerhd
+        project.parse(function (err, obj) {
+            var configs = nonComments(project.pbxXCBuildConfigurationSection()),
+                cfg, settings, index;
+
+            for (cfg in configs) {
+                settings = configs[cfg].buildSettings;
+
+                if (settings['PRODUCT_NAME']) {
+                    index = settings['LIBRARY_SEARCH_PATHS'].indexOf(expected)
+                    test.ok(index >= 0,
+                        expected + ' not found in ' + settings['LIBRARY_SEARCH_PATHS']);
+                }
+            }
+
+            test.done();
+        });
     });
 }
