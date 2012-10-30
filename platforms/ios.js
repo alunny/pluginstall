@@ -138,9 +138,11 @@ exports.installPlugin = function (config, plugin, callback) {
         })
 
         frameworks.forEach(function (framework) {
-            var src = framework.attrib['src'];
-
-            xcodeproj.addFramework(src);
+            var src = framework.attrib['src'],
+                weak = framework.attrib['weak'];
+            
+            var opt = { weak: (weak && weak.toLowerCase() == 'true') };
+            xcodeproj.addFramework(src, opt);
         });
 
         // weirdness with node-plist and top-level <plist>

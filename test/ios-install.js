@@ -146,7 +146,7 @@ exports['should edit the pbxproj file'] = function (test) {
         xcode.project(projPath).parse(function (err, obj) {
             var fileRefSection = obj.project.objects['PBXFileReference'],
                 fileRefLength = Object.keys(fileRefSection).length,
-                EXPECTED_TOTAL_REFERENCES = 94; // magic number ahoy!
+                EXPECTED_TOTAL_REFERENCES = 96; // magic number ahoy!
 
             test.equal(fileRefLength, EXPECTED_TOTAL_REFERENCES);
             test.done();
@@ -159,6 +159,7 @@ exports['should add the framework references to the pbxproj file'] = function (t
         var projPath = config.projectPath + '/SampleApp.xcodeproj/project.pbxproj',
             projContents = fs.readFileSync(projPath, 'utf8'),
             projLines = projContents.split("\n"),
+            expected = "settings = {ATTRIBUTES = (Weak, ); };",
             references;
 
         references = projLines.filter(function (line) {
@@ -168,6 +169,31 @@ exports['should add the framework references to the pbxproj file'] = function (t
         // should be four libsqlite3 reference lines added
         // pretty low-rent test eh
         test.equal(references.length, 4);
+        index = references[0].indexOf(expected)
+        test.ok(index == -1,
+            "settings = {ATTRIBUTES = (Weak, ); }; found in BuildFile reference");
+        test.done();
+    });
+}
+
+exports['should add the weak framework references to the pbxproj file'] = function (test) {
+    ios.installPlugin(config, plugin, function (err) {
+        var projPath = config.projectPath + '/SampleApp.xcodeproj/project.pbxproj',
+            projContents = fs.readFileSync(projPath, 'utf8'),
+            projLines = projContents.split("\n"),
+            expected = "settings = {ATTRIBUTES = (Weak, ); };",
+            references;
+
+        references = projLines.filter(function (line) {
+            return !!(line.match("social.framework"));
+        })
+
+        // should be four social.framework reference lines added
+        // pretty low-rent test eh
+        test.equal(references.length, 4);
+        index = references[0].indexOf(expected)
+        test.ok(index != -1,
+            "settings = {ATTRIBUTES = (Weak, ); }; not found in BuildFile reference");
         test.done();
     });
 }
