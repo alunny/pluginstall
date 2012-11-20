@@ -19,6 +19,7 @@ exports.installPlugin = function (config, plugin, callback) {
         sourceFiles = platformTag.findall('./source-file'),
         libFiles = platformTag.findall('./library-file'),
         PACKAGE_NAME = packageName(config),
+        PACKAGE_PATH = "src/" + PACKAGE_NAME.replace(/\./g, "/"),
 
         configChanges = getConfigChanges(platformTag),
 
@@ -54,6 +55,8 @@ exports.installPlugin = function (config, plugin, callback) {
     sourceFiles.forEach(function (sourceFile) {
         var srcDir = path.resolve(config.projectPath,
                                 sourceFile.attrib['target-dir'])
+                                
+        srcDir = srcDir.replace(/\$PACKAGE_PATH/g, PACKAGE_PATH);
 
         mkdirp(srcDir, function (err) {
             var srcFile = srcPath(config.pluginPath, sourceFile.attrib['src']),
