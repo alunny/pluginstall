@@ -24,7 +24,7 @@ exports.installPlugin = function (config, plugin, callback) {
             if (!files.length) throw "does not appear to be an xcode project";
 
             files = files.filter(function (val) {
-                return !(/\/CordovaLib\/project[.]pbxproj/.test(val))
+                return !(/\/CordovaLib.*\/project[.]pbxproj/.test(val))
             });
 
             store.pbxPath = files[0];
