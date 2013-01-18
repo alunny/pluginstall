@@ -1,22 +1,24 @@
 var path = require('path'),
     mkdirp = require('mkdirp'),
     fs = require('fs'),
+    et = require('elementtree'),
     glob = require('glob'),
     xcode = require('xcode'),
     plist = require('plist'),
     nCallbacks = require('../util/ncallbacks'),
     asyncCopy = require('../util/asyncCopy'),
+    searchAndReplace = require('../util/searchAndReplace'),
     assetsDir = 'www'; // relative path to project's web assets
 
 exports.installPlugin = function (config, plugin, callback) {
     function prepare(then) {
         var store = {},
-            end = nCallbacks(2, function (err) {
+            end = nCallbacks(3, function (err) {
                 if (err) throw err;
 
                 else
-                    then(store.pbxPath, store.xcodeproj, store.plistPath,
-                        store.plist, store.pluginsDir);
+                    then(store.pbxPath, store.xcodeproj, store.cordovaPListPath,
+                        store.cordovaPList, store.plistPath, store.plist, store.pluginsDir);
             });
 
         // grab and parse pbxproj
@@ -32,7 +34,7 @@ exports.installPlugin = function (config, plugin, callback) {
             store.xcodeproj.parse(end);
         });
 
-        // grab and parse plist file
+        // grab and parse cordova plist file
         glob(config.projectPath + '/**/{PhoneGap,Cordova}.plist', function (err, files) {
             if (!files.length) throw "does not appear to be a PhoneGap project";
 
@@ -40,8 +42,24 @@ exports.installPlugin = function (config, plugin, callback) {
                 return !(/^build\//.test(val))
             });
 
-            store.plistPath = files[0];
+            store.cordovaPListPath = files[0];
             store.pluginsDir = path.resolve(files[0], '..', 'Plugins');
+
+            plist.parseFile(store.cordovaPListPath, function (err, obj) {
+                store.cordovaPList = obj;
+                end();
+            });
+        });
+        
+        // grab and parse project plist file
+        glob(config.projectPath + '/**/*-Info.plist', function (err, files) {
+            if (!files.length) throw "does not appear to be a PhoneGap project";
+
+            files = files.filter(function (val) {
+                return !(/^build\//.test(val))
+            });
+
+            store.plistPath = files[0];
 
             plist.parseFile(store.plistPath, function (err, obj) {
                 store.plist = obj;
@@ -63,7 +81,7 @@ exports.installPlugin = function (config, plugin, callback) {
         }
     }
 
-    prepare(function (pbxPath, xcodeproj, plistPath, plistObj, pluginsDir) {
+    prepare(function (pbxPath, xcodeproj, cordovaPListPath, cordovaPListObj, plistPath, plistObj, pluginsDir) {
         var assets = plugin.xmlDoc.findall('./asset'),
             hosts = plugin.xmlDoc.findall('./access'),
             platformTag = plugin.xmlDoc.find('./platform[@name="ios"]'),
@@ -72,7 +90,7 @@ exports.installPlugin = function (config, plugin, callback) {
             resourceFiles = platformTag.findall('./resource-file'),
             frameworks = platformTag.findall('./framework'),
             plistEle = platformTag.find('./plugins-plist'),
-
+            configFiles = platformTag.findall('./config-file'),
             callbackCount = 0, end;
 
         // callback for every file/dir to add
@@ -81,10 +99,25 @@ exports.installPlugin = function (config, plugin, callback) {
         callbackCount += headerFiles.length;
         callbackCount += resourceFiles.length;
         // adding framework is sync, so don't add that
-        callbackCount++; // for writing the plist file
+        callbackCount++; // for writing the cordova plist file
+        callbackCount++; // for writing the project plist file
         callbackCount++; // for writing the pbxproj file
 
-        end = nCallbacks(callbackCount, callback);
+        end = nCallbacks(callbackCount, function(err) {
+          if (err) throw err;
+
+          for (key in config.variables) {
+            searchAndReplace(config.projectPath + '/**/{PhoneGap,Cordova}.plist', 
+              '\\$' + key,
+              config.variables[key]
+            );
+            searchAndReplace(config.projectPath + '/**/*-Info.plist', 
+              '\\$' + key,
+              config.variables[key]
+            );
+          }
+          callback();
+        });
 
         // move asset files into www
         assets.forEach(function (asset) {
@@ -148,21 +181,41 @@ exports.installPlugin = function (config, plugin, callback) {
             var opt = { weak: (weak && weak.toLowerCase() == 'true') };
             xcodeproj.addFramework(src, opt);
         });
-
+        
         // weirdness with node-plist and top-level <plist>
-        if (plistObj[0]) {
-            plistObj = plistObj[0];
-        }
+        if (plistObj[0]) plistObj = plistObj[0];
+        if (cordovaPListObj[0]) cordovaPListObj = cordovaPListObj[0];
 
-        // add hosts to whitelist (ExternalHosts) in plist
+        config.variables["PACKAGE_NAME"] = plistObj.CFBundleIdentifier;
+
+        // add hosts to whitelist (ExternalHosts) in cordova plist
         hosts.forEach(function(host) {
-            plistObj.ExternalHosts.push(host.attrib['origin']);
+          cordovaPListObj.ExternalHosts.push(host.attrib['origin']);
         });
         
-        // add plugin to plist
-        plistObj.Plugins[plistEle.attrib['key']] = plistEle.attrib['string'];
+        // add plugin to cordova plist
+        cordovaPListObj.Plugins[plistEle.attrib['key']] = plistEle.attrib['string'];
         
-        // write out plist
+        // write out cordova plist
+        fs.writeFile(cordovaPListPath, plist.stringify(cordovaPListObj), end);
+        
+        // add config-file items
+        configFiles.forEach(function (configFile) {
+          var parent = configFile.attrib['parent'],
+              text = et.tostring(configFile.find("./*"), { xml_declaration:false });
+
+          plist.parseString(text, function(err, obj) {
+            if (err) throw err
+            
+            var node = plistObj[parent]
+            if (node && Array.isArray(node) && Array.isArray(obj))
+              plistObj[parent] = node.concat(obj);
+            else
+              plistObj[parent] = obj;
+          });
+        });
+        
+        // write out project plist
         fs.writeFile(plistPath, plist.stringify(plistObj), end);
 
         // write out xcodeproj file

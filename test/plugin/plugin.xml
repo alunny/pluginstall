@@ -33,6 +33,18 @@
             <plugin name="ChildBrowser"
                 value="com.phonegap.plugins.childBrowser.ChildBrowser"/>
         </config-file>
+        
+        <config-file target="res/xml/config.xml" parent="/cordova">
+            <custom name="AppID" value="$APP_ID"/>
+        </config-file>
+        
+        <config-file target="res/xml/plugins.xml" parent="/plugins">
+            <custom name="AppID" value="$APP_ID"/>
+        </config-file>
+        
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <custom name="AppID" value="$APP_ID"/>
+        </config-file>
 
         <source-file src="ChildBrowser.java"
                 target-dir="src/com/phonegap/plugins/childBrowser" />
@@ -41,7 +53,7 @@
     <!-- ios -->
     <platform name="ios">
         <plugins-plist key="com.phonegap.plugins.childbrowser"
-            string="ChildBrowserCommand" />
+            string="ChildBrowserCommand.$APP_ID" />
 
         <resource-file src="ChildBrowser.bundle" />
         <resource-file src="ChildBrowserViewController.xib" />
@@ -50,6 +62,19 @@
         <header-file src="ChildBrowserViewController.h" />
         <header-file src="preserveDirs/PreserveDirsTest.h" preserve-dirs="true" />
         <header-file src="TargetDirTest.h" target-dir="targetDir"/>
+
+        <config-file parent="AppId">
+            <string>$APP_ID</string>
+        </config-file>
+        
+        <config-file parent="CFBundleURLTypes">
+            <array>
+              <dict>
+                <key>PackageName</key>
+                <string>$PACKAGE_NAME</string>
+              </dict>
+            </array>
+        </config-file>
 
         <source-file src="ChildBrowserCommand.m" />
         <source-file src="ChildBrowserViewController.m" />
