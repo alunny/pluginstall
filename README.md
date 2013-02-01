@@ -31,6 +31,10 @@ see https://github.com/alunny/cordova-plugin-spec
 
 Currently support the August 16 revision, more or less.
 
+## see also
+
+https://github.com/imhotep/plugman
+
 ## License
 
 Apache
