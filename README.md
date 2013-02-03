@@ -2,6 +2,12 @@
 
 > script to install Cordova plugins
 
+## Deprecation Notice
+
+This repo is no longer under active development. For your Cordova plugin needs, please see
+
+https://github.com/imhotep/plugman
+
 ## Usage
 
     pluginstall PLATFORM PROJECT-PATH PLUGIN-PATH
@@ -30,10 +36,6 @@ Then go!
 see https://github.com/alunny/cordova-plugin-spec
 
 Currently support the August 16 revision, more or less.
-
-## see also
-
-https://github.com/imhotep/plugman
 
 ## License
 
