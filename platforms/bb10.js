@@ -1,11 +1,10 @@
 var fs = require('fs')  // use existsSync in 0.6.x
    , path = require('path')
-   , util = require('util')
    , shell = require('shelljs')
    , et = require('elementtree')
    , getConfigChanges = require('../util/config-changes')
 
-   , assetsDir = 'assets/www'  // relative path to project's web assets
+   , assetsDir = 'www'  // relative path to project's web assets
    , sourceDir = 'src'
    , xml_helpers = require(path.join(__dirname, '..', 'util', 'xml-helpers'));
 
@@ -14,29 +13,28 @@ exports.handlePlugin = function (action, project_dir, plugin_dir, plugin_et) {
     var plugin_id = plugin_et._root.attrib['id']
       , version = plugin_et._root.attrib['version']
       , external_hosts = []
-      , i = 0
+
       // look for assets in the plugin 
       , assets = plugin_et.findall('./asset')
-      , platformTag = plugin_et.find('./platform[@name="android"]')
+      , platformTag = plugin_et.find('./platform[@name="BlackBerry10"]')
       , sourceFiles = platformTag.findall('./source-file')
       , libFiles = platformTag.findall('./library-file')
-      , PACKAGE_NAME = androidPackageName(project_dir)
       , configChanges = getConfigChanges(platformTag);
-
+      
     // find which config-files we're interested in
     Object.keys(configChanges).forEach(function (configFile) {
         if (!fs.existsSync(path.resolve(project_dir, configFile))) {
             delete configChanges[configFile];
         }
     });
-    
+
     // collision detection 
     if(action == "install" && pluginInstalled(plugin_et, project_dir)) {
         throw "Plugin "+plugin_id+" already installed"
     } else if(action == "uninstall" && !pluginInstalled(plugin_et, project_dir)) {
         throw "Plugin "+plugin_id+" not installed"
     }
-
+    
     // move asset files
     assets.forEach(function (asset) {
         var srcPath = path.resolve(
@@ -47,7 +45,6 @@ exports.handlePlugin = function (action, project_dir, plugin_dir, plugin_et) {
                             project_dir,
                             assetsDir,
                             asset.attrib['target']);
-
         var stats = fs.statSync(srcPath);
         if (action == 'install') {
             if(stats.isDirectory()) {
@@ -65,7 +62,7 @@ exports.handlePlugin = function (action, project_dir, plugin_dir, plugin_et) {
     sourceFiles.forEach(function (sourceFile) {
         var srcDir = path.resolve(project_dir,
                                 sourceFile.attrib['target-dir'])
-            , destFile = path.resolve(srcDir,
+          , destFile = path.resolve(srcDir,
                                 path.basename(sourceFile.attrib['src']));
 
         if (action == 'install') {
@@ -95,7 +92,7 @@ exports.handlePlugin = function (action, project_dir, plugin_dir, plugin_et) {
 
         if (action == 'install') {
             shell.mkdir('-p', libDir);
-            var src = path.resolve(plugin_dir, 'src/android',
+            var src = path.resolve(plugin_dir, 'src/BlackBerry10',
                                         libFile.attrib['src']),
                 dest = path.resolve(libDir,
                                 path.basename(libFile.attrib['src']));
@@ -137,39 +134,24 @@ exports.handlePlugin = function (action, project_dir, plugin_dir, plugin_et) {
         });
 
         output = xmlDoc.write({indent: 4});
-        output = output.replace(/\$PACKAGE_NAME/g, PACKAGE_NAME);
         fs.writeFileSync(filepath, output);
     });
 }
 
 
 function srcPath(pluginPath, filename) {
-    var prefix = /^src\/android/;
+    var prefix = /^src\/BlackBerry10/;
 
     if (prefix.test(filename)) {
         return path.resolve(pluginPath, filename);
     } else {
-        return path.resolve(pluginPath, 'src/android', filename);
+        return path.resolve(pluginPath, 'src/BlackBerry10', filename);
     }
-}
-
-// reads the package name out of the Android Manifest file
-// @param string project_dir the absolute path to the directory containing the project
-// @return string the name of the package
-function androidPackageName(project_dir) {
-    var mDoc = xml_helpers.parseElementtreeSync(
-            path.resolve(project_dir, 'AndroidManifest.xml'));
-
-    return mDoc._root.attrib['package'];
 }
 
 function pluginInstalled(plugin_et, project_dir) {
-    var filename = 'res/xml/config.xml';
-    if(fs.existsSync(path.resolve(project_dir, 'res/xml/plugins.xml'))) {
-        filename = 'res/xml/plugins.xml';
-    }
-    var tag_xpath = util.format('./platform[@name="android"]/config-file[@target="%s"]/plugin', filename);
-    var plugin_name = plugin_et.find(tag_xpath).attrib.name;
-    return (fs.readFileSync(path.resolve(project_dir, filename), 'utf8')
+    var config_tag = plugin_et.find('./platform[@name="BlackBerry10"]/config-file[@target="config.xml"]/feature')
+    var plugin_name = config_tag.attrib.id;
+    return (fs.readFileSync(path.resolve(project_dir, 'config.xml'), 'utf8')
            .match(new RegExp(plugin_name, "g")) != null);
 }

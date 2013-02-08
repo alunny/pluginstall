@@ -1,4 +1,4 @@
-// Test installation on Cordova 1.x project
+// Test uninstallation on Cordova 1.x project
 
 var fs = require('fs')
   , path = require('path')
@@ -38,63 +38,82 @@ exports.tearDown = function(callback) {
     callback();
 }
 
-exports['should install webless plugin'] = function (test) {
+exports['should remove the js file'] = function (test) {
+    var jsPath = path.join(test_dir, 'projects', 'android_one', 'assets', 'www', 'childbrowser.js');
+
+    android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
+    android.handlePlugin('uninstall', test_project_dir, test_plugin_dir, plugin_et);
+
+    test.ok(!fs.existsSync(jsPath));
+    test.done();
+}
+
+exports['should not remove common package directories when two plugins share a package subname'] = function (test) {
     
     // setting up a DummyPlugin
-    var dummy_plugin_dir = path.join(test_dir, 'plugins', 'WeblessPlugin')
-    var dummy_xml_path = path.join(test_dir, 'plugins', 'WeblessPlugin', 'plugin.xml')
+    var dummy_plugin_dir = path.join(test_dir, 'plugins', 'DummyPlugin')
+    var dummy_xml_path = path.join(test_dir, 'plugins', 'DummyPlugin', 'plugin.xml')
     dummy_plugin_et  = new et.ElementTree(et.XML(fs.readFileSync(dummy_xml_path, 'utf-8')));
 
+    var javaPath = path.join(test_dir, 'projects', 'android_one', 'src', 'com', 'phonegap', 'plugins', 'childBrowser', 'ChildBrowser.java');
+
+    // installing two plugins that share some common package directory structure
+    android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
     android.handlePlugin('install', test_project_dir, dummy_plugin_dir, dummy_plugin_et);
 
+    // uninstalling DummyPlugin should not delete existing ChildBrowser
+    android.handlePlugin('uninstall', test_project_dir, dummy_plugin_dir, dummy_plugin_et);
+    
+    var stat = fs.statSync(javaPath);
+    test.ok(stat.isFile());
+
     test.done();
 }
 
-exports['should move the js file'] = function (test) {
-    var jsPath = path.join(test_dir, 'projects', 'android_one', 'assets', 'www', 'childbrowser.js');
-    android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
-    fs.stat(jsPath, function(err, stats) {
-        test.ok(!err);
-        test.ok(stats.isFile());
-        test.done();
-    });
-}
-
-exports['should move the directory'] = function (test) {
-    android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
-
+exports['should remove the directory'] = function (test) {
     var assetPath = path.join(test_dir, 'projects', 'android_one', 'assets', 'www', 'childbrowser');
 
-    var assets = fs.statSync(assetPath);
+    android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
+    test.ok(fs.existsSync(assetPath));
 
-    test.ok(assets.isDirectory());
-    test.ok(fs.statSync(assetPath + '/image.jpg'))
+    android.handlePlugin('uninstall', test_project_dir, test_plugin_dir, plugin_et);
+    test.ok(!fs.existsSync(assetPath));
+
     test.done();
 }
 
-exports['should move the src file'] = function (test) {
-    android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
-
+exports['should remove the src file'] = function (test) {
     var javaPath = path.join(test_dir, 'projects', 'android_one', 'src', 'com', 'phonegap', 'plugins', 'childBrowser', 'ChildBrowser.java');
+    android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
     test.ok(fs.statSync(javaPath));
+
+    android.handlePlugin('uninstall', test_project_dir, test_plugin_dir, plugin_et);
+    test.ok(fs.existsSync(path.resolve(test_dir + '/projects/android_one/src')));
+    test.ok(!fs.existsSync(javaPath));
+    test.ok(!fs.existsSync(path.resolve(javaPath + '/..')));
+    test.ok(!fs.existsSync(path.resolve(javaPath + '/../..')));
+    test.ok(!fs.existsSync(path.resolve(javaPath + '/../../..')));
+    test.ok(!fs.existsSync(path.resolve(javaPath + '/../../../..')));
     test.done();
 }
 
-exports['should add ChildBrowser to plugins.xml'] = function (test) {
-    android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
 
+exports['should remove ChildBrowser from plugins.xml'] = function (test) {
+    android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
+    android.handlePlugin('uninstall', test_project_dir, test_plugin_dir, plugin_et);
+    
     var pluginsXmlPath = path.join(test_dir, 'projects', 'android_one', 'res', 'xml', 'plugins.xml');
     var pluginsTxt = fs.readFileSync(pluginsXmlPath, 'utf-8'),
         pluginsDoc = new et.ElementTree(et.XML(pluginsTxt)),
         expected = 'plugin[@name="ChildBrowser"]' +
                     '[@value="com.phonegap.plugins.childBrowser.ChildBrowser"]';
-
-    test.ok(pluginsDoc.find(expected));
+    test.ok(!pluginsDoc.find(expected));
     test.done();
 }
 
-exports['should add ChildBrowser to AndroidManifest.xml'] = function (test) {
+exports['should remove ChildBrowser from AndroidManifest.xml'] = function (test) {
     android.handlePlugin('install', test_project_dir, test_plugin_dir, plugin_et);
+    android.handlePlugin('uninstall', test_project_dir, test_plugin_dir, plugin_et);
 
     var manifestPath = path.join(test_dir, 'projects', 'android_one', 'AndroidManifest.xml');
     var manifestTxt = fs.readFileSync(manifestPath, 'utf-8'),
@@ -108,6 +127,6 @@ exports['should add ChildBrowser to AndroidManifest.xml'] = function (test) {
             break;
         }
     }
-    test.ok(found);
+    test.ok(!found);
     test.done();
 }
