@@ -15,7 +15,8 @@ var fs = require('fs'),
     config = {
         platform: 'ios',
         projectPath: fs.realpathSync('test/project/ios'),
-        pluginPath: fs.realpathSync('test/plugin')
+        pluginPath: fs.realpathSync('test/plugin'),
+        variables: { "APP_ID" : 723658 }
     },
     plugin = pluginstall.parseXml(config),
     assetsDir = path.resolve(config.projectPath, 'www'),
@@ -53,6 +54,7 @@ function clean(calllback) {
     rimraf(srcDir + '/preserveDirs', end)
 
     moveProjFile('SampleApp/PhoneGap.orig.plist', config.projectPath, end);
+    moveProjFile('SampleApp/SampleApp-Info.orig.plist', config.projectPath, end);
     moveProjFile('SampleApp.xcodeproj/project.orig.pbxproj', config.projectPath, end);
 }
 
@@ -128,11 +130,24 @@ exports['should edit PhoneGap.plist'] = function (test) {
         plist.parseFile(plistPath, function (err, obj) {
 
             test.equal(obj.Plugins['com.phonegap.plugins.childbrowser'],
-                'ChildBrowserCommand');
+                'ChildBrowserCommand.723658');
                 
             test.equal(obj.ExternalHosts.length, 2)    
             test.equal(obj.ExternalHosts[0], "build.phonegap.com")
             test.equal(obj.ExternalHosts[1], "s3.amazonaws.com")
+            test.done();
+        });
+    })
+}
+
+exports['should edit SampleApp-Info.plist'] = function (test) {
+    ios.installPlugin(config, plugin, function (err) {
+        var plistPath = config.projectPath + '/SampleApp/SampleApp-Info.plist';
+        plist.parseFile(plistPath, function (err, obj) {
+
+            test.equal(obj.AppId, "723658")
+            test.equal(obj.CFBundleURLTypes.length, 2)
+            test.equal(obj.CFBundleURLTypes[1].PackageName, "com.test.SampleApp")
 
             test.done();
         });

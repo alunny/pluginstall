@@ -21,7 +21,8 @@ var fs = require('fs'),
     config = {
         platform: 'android',
         projectPath: fs.realpathSync('test/project/android_two'),
-        pluginPath: fs.realpathSync('test/plugin')
+        pluginPath: fs.realpathSync('test/plugin'),
+        variables: { "APP_ID" : 723658 }
     },
     plugin = pluginstall.parseXml(config),
     assetsDir = path.resolve(config.projectPath, 'assets/www'),
@@ -114,6 +115,28 @@ exports['should add ChildBrowser to config.xml'] = function (test) {
                         '[@value="com.phonegap.plugins.childBrowser.ChildBrowser"]';
 
         test.ok(pluginsDoc.find(expected));
+        test.done();
+    })
+}
+
+exports['should add AppId to plugins.xml'] = function (test) {
+    android.installPlugin(config, plugin, function (err) {
+        var pluginsTxt = fs.readFileSync('test/project/android_two/res/xml/config.xml', 'utf-8'),
+            pluginsDoc = new et.ElementTree(et.XML(pluginsTxt)),
+            expected = 'custom[@name="AppID"][@value="723658"]';
+
+        test.ok(pluginsDoc.find(expected));
+        test.done();
+    })
+}
+
+exports['should add AppId to manifest'] = function (test) {
+    android.installPlugin(config, plugin, function (err) {
+        var manifestTxt = fs.readFileSync(manifestPath, 'utf-8'),
+            manifestDoc = new et.ElementTree(et.XML(manifestTxt)),
+            expected = 'custom[@name="AppID"][@value="723658"]';
+
+        test.ok(manifestDoc.find(expected));
         test.done();
     })
 }

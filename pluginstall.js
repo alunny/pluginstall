@@ -10,7 +10,7 @@ var fs = require('fs'),
     }
 
 // check arguments and resolve file paths
-exports.init = function (platform, projectPath, pluginPath) {
+exports.init = function (platform, projectPath, pluginPath, variables) {
     var projectPath = fs.realpathSync(projectPath),
         pluginPath = fs.realpathSync(pluginPath);
 
@@ -20,7 +20,8 @@ exports.init = function (platform, projectPath, pluginPath) {
     return {
         platform:    platform,
         projectPath: projectPath,
-        pluginPath:  pluginPath
+        pluginPath:  pluginPath,
+        variables:   variables
     }
 }
 

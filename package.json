@@ -1,11 +1,11 @@
 {
   "author": "Andrew Lunny <alunny@gmail.com>",
-  "name": "pluginstall",
+  "name": "pluginstall-pgb",
   "description": "install Cordova plugins",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/alunny/pluginstall.git"
+    "url": "git://github.com/phonegap-build/pluginstall.git"
   },
   "main": "pluginstall.js",
   "engines": {

@@ -19,7 +19,8 @@ var fs = require('fs'),
     config = {
         platform: 'android',
         projectPath: fs.realpathSync('test/multiple-children/project'),
-        pluginPath: fs.realpathSync('test/multiple-children/plugin')
+        pluginPath: fs.realpathSync('test/multiple-children/plugin'),
+        variables: { "APP_ID" : 123 }
     },
     plugin = pluginstall.parseXml(config),
     manifestPath = path.resolve(config.projectPath, 'AndroidManifest.xml');

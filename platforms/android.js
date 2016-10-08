@@ -8,6 +8,7 @@ var fs = require('../util/fs'), // use existsSync in 0.6.x
     equalNodes = require('../util/equalNodes'),
     getConfigChanges = require('../util/config-changes'),
 
+    searchAndReplace = require('../util/searchAndReplace'),
     assetsDir = 'assets/www', // relative path to project's web assets
     sourceDir = 'src',
     counter = {};
@@ -34,7 +35,27 @@ exports.installPlugin = function (config, plugin, callback) {
         }
     });
     
-    endCallback = nCallbacks(callbackCount, callback)
+    endCallback = nCallbacks(callbackCount, function(err) {
+      if (err) throw err;
+
+      config.variables["PACKAGE_NAME"] = PACKAGE_NAME;
+
+      for (key in config.variables) {
+        searchAndReplace(config.projectPath + '/res/xml/plugins.xml', 
+          '\\$' + key,
+          config.variables[key]
+        );
+        searchAndReplace(config.projectPath + '/res/xml/config.xml', 
+          '\\$' + key,
+          config.variables[key]
+        );
+        searchAndReplace(config.projectPath + '/AndroidManifest.xml', 
+          '\\$' + key,
+          config.variables[key]
+        );
+      }
+      callback();
+    });
 
     // move asset files
     assets.forEach(function (asset) {
@@ -96,7 +117,6 @@ exports.installPlugin = function (config, plugin, callback) {
         });
 
         output = xmlDoc.write();
-        output = output.replace(/\$PACKAGE_NAME/g, PACKAGE_NAME);
 
         fs.writeFile(filepath, output, function (err) {
             if (err) endCallback(err);
